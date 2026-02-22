@@ -1,4 +1,4 @@
-import type {Member, Transaction} from "@/types/types.ts";
+import type {Member} from "@/types/types.ts";
 import type {FC} from "react";
 import {AvatarGroup} from "@/components/Avatar/AvatarGroup.tsx";
 import {formatAmount} from "@/utils";

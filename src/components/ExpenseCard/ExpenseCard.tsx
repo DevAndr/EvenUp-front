@@ -1,4 +1,4 @@
-import type {Expense, Member, Transaction} from "@/types/types.ts";
+import type {Expense, Member} from "@/types/types.ts";
 import type {FC} from "react";
 import {CategoryIcon} from "@/components/CategoryIcon/CategoryIcon.tsx";
 import {formatAmount, formatDate} from "@/utils";
