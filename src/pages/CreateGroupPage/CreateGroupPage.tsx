@@ -4,35 +4,39 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ChevronLeft, X, Plus, Check } from "lucide-react";
+import type { CreateGroupPayload, SplitType } from "@/types/types.ts";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-// const createGroup = (data) => axios.post("/api/groups", data).then(r => r.data);
+// const createGroup = (data: CreateGroupPayload): Promise<{ id: string }> =>
+//   axios.post("/api/groups", data).then(r => r.data);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const EMOJIS = [
+const EMOJIS: string[] = [
     "✈️","🏖️","🏙️","⛷️","🎉","🏠","🍕","🎸",
     "🏕️","🚗","🎂","🍻","🛳️","🎭","🏋️","🌍",
 ];
 
-const QUICK_GROUPS = [
+interface QuickGroup { emoji: string; name: string }
+const QUICK_GROUPS: QuickGroup[] = [
     { emoji: "✈️", name: "Поездка в Питер" },
     { emoji: "🏠", name: "Квартира" },
     { emoji: "🎉", name: "Корпоратив" },
     { emoji: "🍕", name: "Ужин с друзьями" },
 ];
 
-const SPLIT_TYPES = [
-    { id: "equal", label: "Поровну", icon: "⚖️", desc: "Все платят одинаково" },
-    { id: "custom", label: "По-разному", icon: "✏️", desc: "Можно задать доли" },
+interface SplitTypeOption { id: SplitType; label: string; icon: string; desc: string }
+const SPLIT_TYPES: SplitTypeOption[] = [
+    { id: "equal",  label: "Поровну",      icon: "⚖️", desc: "Все платят одинаково" },
+    { id: "custom", label: "По-разному",   icon: "✏️", desc: "Можно задать доли" },
 ];
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
     "bg-indigo-500","bg-violet-500","bg-pink-500","bg-amber-500",
     "bg-emerald-500","bg-blue-500","bg-red-500","bg-teal-500",
-];
+] as const;
 
-function avatarColorClass(name: string) {
+function avatarColorClass(name: string): string {
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
@@ -40,22 +44,22 @@ function avatarColorClass(name: string) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StepIndicator({ current, total }: { current: number, total: number }) {
+interface StepIndicatorProps { current: number; total: number }
+function StepIndicator({ current, total }: StepIndicatorProps) {
     return (
         <div className="flex items-center gap-1.5">
             {Array.from({ length: total }).map((_, i) => (
                 <div
                     key={i}
-                    className={`h-[3px] rounded-full transition-all duration-300 ${
-                        i <= current ? "bg-indigo-500" : "bg-zinc-800"
-                    } ${i === current ? "w-6" : "w-2"}`}
+                    className={`h-[3px] rounded-full transition-all duration-300 ${i <= current ? "bg-indigo-500" : "bg-zinc-800"} ${i === current ? "w-6" : "w-2"}`}
                 />
             ))}
         </div>
     );
 }
 
-function EmojiPickerSheet({ value, onChange }) {
+interface EmojiPickerSheetProps { value: string; onChange: (e: string) => void }
+function EmojiPickerSheet({ value, onChange }: EmojiPickerSheetProps) {
     const [open, setOpen] = useState(false);
     return (
         <>
@@ -66,7 +70,6 @@ function EmojiPickerSheet({ value, onChange }) {
             >
                 {value}
             </button>
-
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetContent side="bottom" className="bg-[#161616] border-t border-[#2a2a2a] rounded-t-3xl pb-10">
                     <SheetHeader className="mb-4">
@@ -93,7 +96,8 @@ function EmojiPickerSheet({ value, onChange }) {
     );
 }
 
-function MemberChip({ name, onRemove, isYou }) {
+interface MemberChipProps { name: string; onRemove: (name: string) => void; isYou?: boolean }
+function MemberChip({ name, onRemove, isYou = false }: MemberChipProps) {
     return (
         <div className="flex items-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-full pl-1.5 pr-2.5 py-1.5 animate-in fade-in zoom-in-90 duration-200">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${isYou ? "bg-indigo-500" : avatarColorClass(name)}`}>
@@ -111,11 +115,12 @@ function MemberChip({ name, onRemove, isYou }) {
     );
 }
 
-function AddMemberRow({ onAdd }) {
+interface AddMemberRowProps { onAdd: (name: string) => void }
+function AddMemberRow({ onAdd }: AddMemberRowProps) {
     const [value, setValue] = useState("");
     const valid = value.trim().length >= 2;
 
-    const handleAdd = () => {
+    const handleAdd = (): void => {
         if (!valid) return;
         onAdd(value.trim());
         setValue("");
@@ -142,7 +147,8 @@ function AddMemberRow({ onAdd }) {
     );
 }
 
-function SplitTypeCard({ type, selected, onClick }) {
+interface SplitTypeCardProps { type: SplitTypeOption; selected: boolean; onClick: (id: SplitType) => void }
+function SplitTypeCard({ type, selected, onClick }: SplitTypeCardProps) {
     return (
         <button
             onClick={() => onClick(type.id)}
@@ -153,9 +159,7 @@ function SplitTypeCard({ type, selected, onClick }) {
             }`}
         >
             <div className="text-xl mb-1">{type.icon}</div>
-            <div className={`font-bold text-sm ${selected ? "text-indigo-300" : "text-zinc-300"}`}>
-                {type.label}
-            </div>
+            <div className={`font-bold text-sm ${selected ? "text-indigo-300" : "text-zinc-300"}`}>{type.label}</div>
             <div className="text-[11px] text-zinc-600 mt-0.5">{type.desc}</div>
         </button>
     );
@@ -166,27 +170,28 @@ function SplitTypeCard({ type, selected, onClick }) {
 export default function CreateGroupPage() {
     const navigate = useNavigate();
 
-    const [step, setStep] = useState(0);
-    const [emoji, setEmoji] = useState("✈️");
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [members, setMembers] = useState([]);
-    const [splitType, setSplitType] = useState("equal");
-    const [nameError, setNameError] = useState("");
+    const [step, setStep]               = useState<number>(0);
+    const [emoji, setEmoji]             = useState<string>("✈️");
+    const [name, setName]               = useState<string>("");
+    const [description, setDescription] = useState<string>("");
+    const [members, setMembers]         = useState<string[]>([]);
+    const [splitType, setSplitType]     = useState<SplitType>("equal");
+    const [nameError, setNameError]     = useState<string>("");
 
-    // const mutation = useMutation({
+    // const mutation = useMutation<{ id: string }, Error, CreateGroupPayload>({
     //   mutationFn: createGroup,
     //   onSuccess: (data) => navigate(`/group/${data.id}`),
     // });
 
-    const addMember = (memberName) => {
+    const addMember = (memberName: string): void => {
         if (members.find(m => m.toLowerCase() === memberName.toLowerCase())) return;
         setMembers(prev => [...prev, memberName]);
     };
 
-    const removeMember = (memberName) => setMembers(prev => prev.filter(m => m !== memberName));
+    const removeMember = (memberName: string): void =>
+        setMembers(prev => prev.filter(m => m !== memberName));
 
-    const handleNext = () => {
+    const handleNext = (): void => {
         if (step === 0 && name.trim().length < 2) {
             setNameError("Минимум 2 символа");
             return;
@@ -195,20 +200,19 @@ export default function CreateGroupPage() {
         setStep(s => s + 1);
     };
 
-    const handleBack = () => step === 0 ? navigate(-1) : setStep(s => s - 1);
+    const handleBack = () => (step === 0 ? navigate(-1) : setStep(s => s - 1));
 
-    const handleCreate = () => {
-        const payload = { emoji, name, description, members, splitType };
+    const handleCreate = (): void => {
+        const payload: CreateGroupPayload = { emoji, name, description, members, splitType };
         console.log("Create:", payload);
         // mutation.mutate(payload);
         navigate("/group/new-id");
     };
 
-    const canProceed = step === 0 ? name.trim().length >= 2 : true;
+    const canProceed: boolean = step === 0 ? name.trim().length >= 2 : true;
 
     return (
         <div className="min-h-screen bg-[#0f0f0f] px-4 pt-4 pb-28 max-w-[480px] mx-auto font-[Manrope,sans-serif]">
-
             <style>{`
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(14px); }
@@ -221,9 +225,7 @@ export default function CreateGroupPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-7 pt-1">
                 <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleBack}
+                    variant="ghost" size="icon" onClick={handleBack}
                     className="w-9 h-9 rounded-[12px] bg-[#1a1a1a] border border-[#2a2a2a] text-zinc-400 hover:text-zinc-100 hover:bg-[#242424]"
                 >
                     <ChevronLeft size={20} />
@@ -238,7 +240,6 @@ export default function CreateGroupPage() {
                     <h2 className="text-[26px] font-extrabold text-zinc-100 tracking-tight mb-1">Новая группа</h2>
                     <p className="text-sm text-zinc-600 mb-6">Дай название и выбери иконку</p>
 
-                    {/* Emoji + Name */}
                     <div className="flex items-center gap-3 mb-5">
                         <EmojiPickerSheet value={emoji} onChange={setEmoji} />
                         <div className="flex-1">
@@ -256,7 +257,6 @@ export default function CreateGroupPage() {
                         </div>
                     </div>
 
-                    {/* Description */}
                     <div className="mb-6">
                         <label className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wider block mb-2">
                             Описание (необязательно)
@@ -270,11 +270,8 @@ export default function CreateGroupPage() {
                         />
                     </div>
 
-                    {/* Quick picks */}
                     <div>
-                        <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">
-                            Быстрый старт
-                        </p>
+                        <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">Быстрый старт</p>
                         <div className="flex flex-wrap gap-2">
                             {QUICK_GROUPS.map(ex => (
                                 <button
@@ -328,26 +325,16 @@ export default function CreateGroupPage() {
                     </label>
                     <div className="flex gap-2.5 mb-7">
                         {SPLIT_TYPES.map(t => (
-                            <SplitTypeCard
-                                key={t.id}
-                                type={t}
-                                selected={splitType === t.id}
-                                onClick={setSplitType}
-                            />
+                            <SplitTypeCard key={t.id} type={t} selected={splitType === t.id} onClick={setSplitType} />
                         ))}
                     </div>
 
-                    {/* Preview */}
                     <div>
-                        <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">
-                            Предпросмотр
-                        </p>
+                        <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">Предпросмотр</p>
                         <div className="bg-[#161616] border border-[#242424] rounded-2xl p-5 text-center">
                             <div className="text-4xl mb-2">{emoji}</div>
                             <div className="font-extrabold text-lg text-zinc-100">{name}</div>
-                            {description && (
-                                <div className="text-sm text-zinc-600 mt-1">{description}</div>
-                            )}
+                            {description && <div className="text-sm text-zinc-600 mt-1">{description}</div>}
                             <div className="text-xs text-zinc-600 mt-3">
                                 {members.length + 1} {members.length + 1 < 5 ? "участника" : "участников"} · {splitType === "equal" ? "поровну" : "по-разному"}
                             </div>
@@ -356,18 +343,17 @@ export default function CreateGroupPage() {
                 </div>
             )}
 
-            {/* ── Bottom bar ── */}
+            {/* Bottom bar */}
             <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-7 pt-8 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/90 to-transparent">
                 <Button
                     onClick={step < 2 ? handleNext : handleCreate}
                     disabled={!canProceed}
                     className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-30 rounded-2xl h-14 text-[16px] font-bold shadow-[0_4px_24px_rgba(99,102,241,0.35)] tracking-tight"
                 >
-                    {step < 2 ? (
-                        <>Далее <ChevronLeft size={18} className="rotate-180 ml-1" /></>
-                    ) : (
-                        <><Check size={18} className="mr-1.5" /> Создать группу</>
-                    )}
+                    {step < 2
+                        ? <><span>Далее</span><ChevronLeft size={18} className="rotate-180 ml-1" /></>
+                        : <><Check size={18} className="mr-1.5" />Создать группу</>
+                    }
                 </Button>
             </div>
         </div>

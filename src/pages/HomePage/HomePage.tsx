@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import type { GroupSummary } from "@/types/types.ts";
 
 // ─── API ──────────────────────────────────────────────────────────────────────
-// const fetchGroups = () => axios.get("/api/groups").then(r => r.data);
+// const fetchGroups = (): Promise<GroupSummary[]> =>
+//   axios.get("/api/groups").then(r => r.data);
 
 // ─── Mock ─────────────────────────────────────────────────────────────────────
-const mockGroups = [
+const mockGroups: GroupSummary[] = [
     {
         id: "1",
         name: "Поездка в Питер",
@@ -53,21 +55,21 @@ const mockGroups = [
 const AVATAR_COLORS = [
     "bg-indigo-500", "bg-violet-500", "bg-pink-500", "bg-amber-500",
     "bg-emerald-500", "bg-blue-500", "bg-red-500", "bg-teal-500",
-];
+] as const;
 
-function avatarColorClass(name) {
+function avatarColorClass(name: string): string {
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-function formatAmount(amount) {
+function formatAmount(amount: number): string {
     return new Intl.NumberFormat("ru-RU", {
         style: "currency", currency: "RUB", maximumFractionDigits: 0,
     }).format(Math.abs(amount));
 }
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr: string): string {
     const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
     if (days === 0) return "сегодня";
     if (days === 1) return "вчера";
@@ -75,9 +77,21 @@ function timeAgo(dateStr) {
     return new Date(dateStr).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 }
 
+function pluralMembers(count: number): string {
+    if (count === 1) return "участник";
+    if (count < 5)  return "участника";
+    return "участников";
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function Avatar({ name, size = "w-7 h-7", textSize = "text-xs" }) {
+interface AvatarProps {
+    name: string;
+    size?: string;
+    textSize?: string;
+}
+
+function Avatar({ name, size = "w-7 h-7", textSize = "text-xs" }: AvatarProps) {
     return (
         <div className={`${size} ${avatarColorClass(name)} ${textSize} rounded-full flex items-center justify-center font-bold text-white shrink-0 border-2 border-[#0f0f0f]`}>
             {name[0].toUpperCase()}
@@ -85,7 +99,12 @@ function Avatar({ name, size = "w-7 h-7", textSize = "text-xs" }) {
     );
 }
 
-function MemberStack({ members, total }) {
+interface MemberStackProps {
+    members: GroupSummary["members"];
+    total: number;
+}
+
+function MemberStack({ members, total }: MemberStackProps) {
     const visible = members.slice(0, 3);
     const rest = total - visible.length;
     return (
@@ -101,13 +120,17 @@ function MemberStack({ members, total }) {
                 </div>
             )}
             <span className="ml-2 text-xs text-zinc-600">
-        {total} {total === 1 ? "участник" : total < 5 ? "участника" : "участников"}
+        {total} {pluralMembers(total)}
       </span>
         </div>
     );
 }
 
-function BalanceBadge({ amount }) {
+interface BalanceBadgeProps {
+    amount: number;
+}
+
+function BalanceBadge({ amount }: BalanceBadgeProps) {
     if (amount === 0) return <span className="text-xs text-zinc-600 font-medium">✓ всё ровно</span>;
     const positive = amount > 0;
     return (
@@ -117,7 +140,12 @@ function BalanceBadge({ amount }) {
     );
 }
 
-function GroupCard({ group, onClick }) {
+interface GroupCardProps {
+    group: GroupSummary;
+    onClick: (id: string) => void;
+}
+
+function GroupCard({ group, onClick }: GroupCardProps) {
     return (
         <div
             onClick={() => onClick(group.id)}
@@ -146,8 +174,12 @@ function GroupCard({ group, onClick }) {
     );
 }
 
-function TotalSummary({ groups }) {
-    const totalOwed = groups.reduce((s, g) => g.myBalance < 0 ? s + g.myBalance : s, 0);
+interface TotalSummaryProps {
+    groups: GroupSummary[];
+}
+
+function TotalSummary({ groups }: TotalSummaryProps) {
+    const totalOwed  = groups.reduce((s, g) => g.myBalance < 0 ? s + g.myBalance : s, 0);
     const totalOwing = groups.reduce((s, g) => g.myBalance > 0 ? s + g.myBalance : s, 0);
     if (!totalOwed && !totalOwing) return null;
     return (
@@ -168,7 +200,11 @@ function TotalSummary({ groups }) {
     );
 }
 
-function EmptyState({ onCreateGroup }) {
+interface EmptyStateProps {
+    onCreateGroup: () => void;
+}
+
+function EmptyState({ onCreateGroup }: EmptyStateProps) {
     return (
         <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
             <div className="text-5xl">🤝</div>
@@ -203,9 +239,15 @@ function SkeletonCard() {
 export default function HomePage() {
     const navigate = useNavigate();
 
-    // const { data: groups = [], isLoading } = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
-    const groups = mockGroups;
+    // const { data: groups = [], isLoading } = useQuery<GroupSummary[]>({
+    //   queryKey: ["groups"],
+    //   queryFn: fetchGroups,
+    // });
+    const groups: GroupSummary[] = mockGroups;
     const isLoading = false;
+
+    const handleGroupClick = (id: string) => navigate(`/group/${id}`);
+    const handleCreate = () => navigate("/group/new");
 
     return (
         <div className="min-h-screen bg-[#0f0f0f] px-4 pt-4 pb-0 max-w-[480px] mx-auto font-[Manrope,sans-serif]">
@@ -221,7 +263,7 @@ export default function HomePage() {
                     </p>
                 </div>
                 <Button
-                    onClick={() => navigate("/group/new")}
+                    onClick={handleCreate}
                     size="icon"
                     className="w-10 h-10 rounded-[14px] bg-[#1e1e1e] border border-[#2a2a2a] hover:bg-[#252525] text-zinc-100"
                 >
@@ -234,13 +276,13 @@ export default function HomePage() {
                     {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
                 </div>
             ) : groups.length === 0 ? (
-                <EmptyState onCreateGroup={() => navigate("/group/new")} />
+                <EmptyState onCreateGroup={handleCreate} />
             ) : (
                 <>
                     <TotalSummary groups={groups} />
                     <div className="flex flex-col gap-2.5">
                         {groups.map(g => (
-                            <GroupCard key={g.id} group={g} onClick={(id) => navigate(`/group/${id}`)} />
+                            <GroupCard key={g.id} group={g} onClick={handleGroupClick} />
                         ))}
                     </div>
                     <div className="h-24" />
@@ -251,7 +293,7 @@ export default function HomePage() {
             {!isLoading && groups.length > 0 && (
                 <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-6 pt-8 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/80 to-transparent pointer-events-none">
                     <Button
-                        onClick={() => navigate("/group/new")}
+                        onClick={handleCreate}
                         className="pointer-events-auto bg-indigo-500 hover:bg-indigo-600 rounded-full px-8 py-3 text-[15px] font-bold shadow-[0_4px_24px_rgba(99,102,241,0.4)]"
                     >
                         + Новая группа
