@@ -3,7 +3,6 @@ import type {CategoryId, SplitType, TabId} from "@/types/types.ts";
 import {
     Utensils, Car, ShoppingCart, Home, Music, Plane, MoreHorizontal,
 } from "lucide-react";
-import type {FC} from "react";
 
 export const AVATAR_COLORS = [
     "bg-indigo-500", "bg-violet-500", "bg-pink-500", "bg-amber-500",
@@ -20,13 +19,13 @@ export interface CategoryConfig {
 }
 
 export const CATEGORIES: CategoryConfig[] = [
-    { id: "food",    label: "Еда",       icon: Utensils,     color: "text-orange-400",  bg: "bg-orange-400/10" },
-    { id: "taxi",    label: "Такси",     icon: Car,          color: "text-blue-400",    bg: "bg-blue-400/10" },
-    { id: "grocery", label: "Продукты",  icon: ShoppingCart, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-    { id: "home",    label: "Жильё",     icon: Home,         color: "text-violet-400",  bg: "bg-violet-400/10" },
-    { id: "music",   label: "Досуг",     icon: Music,        color: "text-pink-400",    bg: "bg-pink-400/10" },
-    { id: "plane",   label: "Транспорт", icon: Plane,        color: "text-indigo-400",  bg: "bg-indigo-400/10" },
-    { id: "other",   label: "Другое",    icon: MoreHorizontal, color: "text-zinc-400",  bg: "bg-zinc-400/10" },
+    { id: "FOOD",    label: "Еда",       icon: Utensils,     color: "text-orange-400",  bg: "bg-orange-400/10" },
+    { id: "TAXI",    label: "Такси",     icon: Car,          color: "text-blue-400",    bg: "bg-blue-400/10" },
+    { id: "GROCERY", label: "Продукты",  icon: ShoppingCart, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+    { id: "HOME",    label: "Жильё",     icon: Home,         color: "text-violet-400",  bg: "bg-violet-400/10" },
+    { id: "MUSIC",   label: "Досуг",     icon: Music,        color: "text-pink-400",    bg: "bg-pink-400/10" },
+    { id: "PLANE",   label: "Транспорт", icon: Plane,        color: "text-indigo-400",  bg: "bg-indigo-400/10" },
+    { id: "OTHER",   label: "Другое",    icon: MoreHorizontal, color: "text-zinc-400",  bg: "bg-zinc-400/10" },
 ];
 
 interface TabConfig { id: TabId; label: string; icon: LucideIcon }

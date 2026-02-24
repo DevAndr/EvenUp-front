@@ -2,92 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ChevronLeft, X, Check } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 import type { CreateGroupPayload, SplitType } from "@/types/types.ts";
 import {AddMemberRow} from "@/components/Rows/AddMemberRow.tsx";
-import {EMOJIS, QUICK_GROUPS, SPLIT_TYPES} from "@/const";
-import {avatarColorClass} from "@/utils";
+import {QUICK_GROUPS, SPLIT_TYPES} from "@/const";
 import {SplitTypeCard} from "@/components/Cards/SplitTypeCard.tsx";
+import {StepIndicator} from "@/components/Step/StepIndicator.tsx";
+import {EmojiPickerSheet} from "@/components/Emoji/EmojiPickerSheet.tsx";
+import {MemberChip} from "@/components/Chips/MemberChip.tsx";
 
 // const createGroup = (data: CreateGroupPayload): Promise<{ id: string }> =>
 //   axios.post("/api/groups", data).then(r => r.data);
-
-
-interface StepIndicatorProps { current: number; total: number }
-function StepIndicator({ current, total }: StepIndicatorProps) {
-    return (
-        <div className="flex items-center gap-1.5">
-            {Array.from({ length: total }).map((_, i) => (
-                <div
-                    key={i}
-                    className={`h-[3px] rounded-full transition-all duration-300 ${i <= current ? "bg-indigo-500" : "bg-zinc-800"} ${i === current ? "w-6" : "w-2"}`}
-                />
-            ))}
-        </div>
-    );
-}
-
-interface EmojiPickerSheetProps { value: string; onChange: (e: string) => void }
-function EmojiPickerSheet({ value, onChange }: EmojiPickerSheetProps) {
-    const [open, setOpen] = useState(false);
-    return (
-        <>
-            <button
-                type="button"
-                onClick={() => setOpen(true)}
-                className="w-16 h-16 rounded-[20px] bg-[#1a1a1a] border-2 border-[#2a2a2a] text-3xl flex items-center justify-center shrink-0 transition-colors hover:border-indigo-500/50 active:scale-95"
-            >
-                {value}
-            </button>
-            <Sheet open={open} onOpenChange={setOpen}>
-                <SheetContent side="bottom" className="bg-[#161616] border-t border-[#2a2a2a] rounded-t-3xl pb-10">
-                    <SheetHeader className="mb-4">
-                        <SheetTitle className="text-zinc-100 text-lg font-bold">Выбери иконку</SheetTitle>
-                    </SheetHeader>
-                    <div className="grid grid-cols-4 gap-3">
-                        {EMOJIS.map(emoji => (
-                            <button
-                                key={emoji}
-                                onClick={() => { onChange(emoji); setOpen(false); }}
-                                className={`h-14 rounded-2xl text-2xl flex items-center justify-center transition-all ${
-                                    value === emoji
-                                        ? "bg-indigo-500/20 border border-indigo-500/40"
-                                        : "bg-[#1e1e1e] border border-transparent hover:border-zinc-700"
-                                }`}
-                            >
-                                {emoji}
-                            </button>
-                        ))}
-                    </div>
-                </SheetContent>
-            </Sheet>
-        </>
-    );
-}
-
-interface MemberChipProps { name: string; onRemove: (name: string) => void; isYou?: boolean }
-function MemberChip({ name, onRemove, isYou = false }: MemberChipProps) {
-    return (
-        <div className="flex items-center gap-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-full pl-1.5 pr-2.5 py-1.5 animate-in fade-in zoom-in-90 duration-200">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${isYou ? "bg-indigo-500" : avatarColorClass(name)}`}>
-                {isYou ? "Я" : name[0].toUpperCase()}
-            </div>
-            <span className="text-[13px] font-semibold text-zinc-300 max-w-[90px] truncate">
-        {isYou ? "Вы" : name}
-      </span>
-            {!isYou && (
-                <Button onClick={() => onRemove(name)} className="text-zinc-600 hover:text-zinc-400 transition-colors">
-                    <X size={14} />
-                </Button>
-            )}
-        </div>
-    );
-}
-
-
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function CreateGroupPage() {
     const navigate = useNavigate();
