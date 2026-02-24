@@ -3,46 +3,16 @@ import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ChevronLeft, X, Plus, Check } from "lucide-react";
+import { ChevronLeft, X, Check } from "lucide-react";
 import type { CreateGroupPayload, SplitType } from "@/types/types.ts";
+import {AddMemberRow} from "@/components/Rows/AddMemberRow.tsx";
+import {EMOJIS, QUICK_GROUPS, SPLIT_TYPES} from "@/const";
+import {avatarColorClass} from "@/utils";
+import {SplitTypeCard} from "@/components/Cards/SplitTypeCard.tsx";
 
-// ─── API ──────────────────────────────────────────────────────────────────────
 // const createGroup = (data: CreateGroupPayload): Promise<{ id: string }> =>
 //   axios.post("/api/groups", data).then(r => r.data);
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const EMOJIS: string[] = [
-    "✈️","🏖️","🏙️","⛷️","🎉","🏠","🍕","🎸",
-    "🏕️","🚗","🎂","🍻","🛳️","🎭","🏋️","🌍",
-];
-
-interface QuickGroup { emoji: string; name: string }
-const QUICK_GROUPS: QuickGroup[] = [
-    { emoji: "✈️", name: "Поездка в Питер" },
-    { emoji: "🏠", name: "Квартира" },
-    { emoji: "🎉", name: "Корпоратив" },
-    { emoji: "🍕", name: "Ужин с друзьями" },
-];
-
-interface SplitTypeOption { id: SplitType; label: string; icon: string; desc: string }
-const SPLIT_TYPES: SplitTypeOption[] = [
-    { id: "equal",  label: "Поровну",      icon: "⚖️", desc: "Все платят одинаково" },
-    { id: "custom", label: "По-разному",   icon: "✏️", desc: "Можно задать доли" },
-];
-
-// ─── Utils ────────────────────────────────────────────────────────────────────
-const AVATAR_COLORS = [
-    "bg-indigo-500","bg-violet-500","bg-pink-500","bg-amber-500",
-    "bg-emerald-500","bg-blue-500","bg-red-500","bg-teal-500",
-] as const;
-
-function avatarColorClass(name: string): string {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface StepIndicatorProps { current: number; total: number }
 function StepIndicator({ current, total }: StepIndicatorProps) {
@@ -107,63 +77,15 @@ function MemberChip({ name, onRemove, isYou = false }: MemberChipProps) {
         {isYou ? "Вы" : name}
       </span>
             {!isYou && (
-                <button onClick={() => onRemove(name)} className="text-zinc-600 hover:text-zinc-400 transition-colors">
+                <Button onClick={() => onRemove(name)} className="text-zinc-600 hover:text-zinc-400 transition-colors">
                     <X size={14} />
-                </button>
+                </Button>
             )}
         </div>
     );
 }
 
-interface AddMemberRowProps { onAdd: (name: string) => void }
-function AddMemberRow({ onAdd }: AddMemberRowProps) {
-    const [value, setValue] = useState("");
-    const valid = value.trim().length >= 2;
 
-    const handleAdd = (): void => {
-        if (!valid) return;
-        onAdd(value.trim());
-        setValue("");
-    };
-
-    return (
-        <div className="flex gap-2">
-            <Input
-                value={value}
-                onChange={e => setValue(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleAdd()}
-                placeholder="Имя участника..."
-                maxLength={30}
-                className="bg-[#1a1a1a] border-[#2a2a2a] text-zinc-100 placeholder:text-zinc-700 rounded-2xl focus-visible:ring-indigo-500/40 focus-visible:border-indigo-500"
-            />
-            <Button
-                onClick={handleAdd}
-                disabled={!valid}
-                className="rounded-2xl bg-indigo-500 hover:bg-indigo-600 disabled:opacity-30 px-4 shrink-0"
-            >
-                <Plus size={18} />
-            </Button>
-        </div>
-    );
-}
-
-interface SplitTypeCardProps { type: SplitTypeOption; selected: boolean; onClick: (id: SplitType) => void }
-function SplitTypeCard({ type, selected, onClick }: SplitTypeCardProps) {
-    return (
-        <button
-            onClick={() => onClick(type.id)}
-            className={`flex-1 rounded-2xl p-3 text-left transition-all border ${
-                selected
-                    ? "bg-indigo-500/10 border-indigo-500/40"
-                    : "bg-[#1a1a1a] border-[#242424] hover:border-zinc-700"
-            }`}
-        >
-            <div className="text-xl mb-1">{type.icon}</div>
-            <div className={`font-bold text-sm ${selected ? "text-indigo-300" : "text-zinc-300"}`}>{type.label}</div>
-            <div className="text-[11px] text-zinc-600 mt-0.5">{type.desc}</div>
-        </button>
-    );
-}
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -175,7 +97,7 @@ export default function CreateGroupPage() {
     const [name, setName]               = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [members, setMembers]         = useState<string[]>([]);
-    const [splitType, setSplitType]     = useState<SplitType>("equal");
+    const [splitType, setSplitType]     = useState<SplitType>("EQUAL");
     const [nameError, setNameError]     = useState<string>("");
 
     // const mutation = useMutation<{ id: string }, Error, CreateGroupPayload>({
@@ -336,7 +258,7 @@ export default function CreateGroupPage() {
                             <div className="font-extrabold text-lg text-zinc-100">{name}</div>
                             {description && <div className="text-sm text-zinc-600 mt-1">{description}</div>}
                             <div className="text-xs text-zinc-600 mt-3">
-                                {members.length + 1} {members.length + 1 < 5 ? "участника" : "участников"} · {splitType === "equal" ? "поровну" : "по-разному"}
+                                {members.length + 1} {members.length + 1 < 5 ? "участника" : "участников"} · {splitType === "EQUAL" ? "поровну" : "по-разному"}
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import {type FC, useState} from "react";
-import type {CategoryId, Expense, Member} from "@/types/types.ts";
+import type {CategoryId, Expense, MemberMember} from "@/types/types.ts";
 import {Button} from "@/components/ui/button.tsx";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -10,14 +10,14 @@ import {Check} from "lucide-react";
 interface AddExpenseSheetProps {
     open: boolean;
     onClose: () => void;
-    members: Member[];
+    members: MemberMember[];
     onAdd: (expense: Expense) => void;
 }
 
 export const AddExpenseSheet: FC<AddExpenseSheetProps> = ({ open, onClose, members, onAdd }: AddExpenseSheetProps) => {
     const [description, setDescription] = useState<string>("");
     const [amount, setAmount]           = useState<string>("");
-    const [category, setCategory]       = useState<CategoryId>("food");
+    const [category, setCategory]       = useState<CategoryId>("FOOD");
     const [paidBy, setPaidBy]           = useState<string>("1");
     const [splitWith, setSplitWith]     = useState<string[]>(members.map(m => m.id));
 
@@ -38,14 +38,14 @@ export const AddExpenseSheet: FC<AddExpenseSheetProps> = ({ open, onClose, membe
             splitWith,
             date: new Date().toISOString(),
         });
-        setDescription(""); setAmount(""); setCategory("food");
+        setDescription(""); setAmount(""); setCategory("FOOD");
         setPaidBy("1"); setSplitWith(members.map(m => m.id));
         onClose();
     };
 
     return (
         <Sheet open={open} onOpenChange={onClose}>
-            <SheetContent side="bottom" className="bg-[#161616] border-t border-[#2a2a2a] rounded-t-3xl pb-10 max-h-[90vh] overflow-y-auto">
+            <SheetContent side="bottom" className="bg-[#161616] border-t border-[#2a2a2a] rounded-t-3xl p-4 pb-10 max-h-[90vh] overflow-y-auto">
                 <SheetHeader className="mb-5">
                     <SheetTitle className="text-zinc-100 text-lg font-bold">Новая трата</SheetTitle>
                 </SheetHeader>

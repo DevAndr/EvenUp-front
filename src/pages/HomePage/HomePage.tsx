@@ -1,26 +1,20 @@
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import type { GroupSummary } from "@/types/types.ts";
-import {mockGroups} from "@/mock";
 import {GroupCard} from "@/components/GroupCard/GroupCard.tsx";
 import {EmptyState} from "@/components/Empty/EmptyStateGroups.tsx";
 import {TotalSummary} from "@/components/TotalSummary/TotalSummary.tsx";
 import {SkeletonCard} from "@/components/Skeleton/SkeletonCard.tsx";
+import {useGetGroups} from "@/api/groups/useGetGroups.ts";
 
 
 export default function HomePage() {
     const navigate = useNavigate();
 
-    // const { data: groups = [], isLoading } = useQuery<GroupSummary[]>({
-    //   queryKey: ["groups"],
-    //   queryFn: fetchGroups,
-    // });
-    const groups: GroupSummary[] = mockGroups;
-    const isLoading = false;
+    const { data: groups = [], isLoading } = useGetGroups();
 
-    const handleGroupClick = (id: string) => navigate(`/group/${id}`);
-    const handleCreate = () => navigate("/group/new");
+    const handleGroupClick = (id: string) => navigate(`/app/group/${id}`);
+    const handleCreate = () => navigate("/app/group/new");
 
     return (
         <div className="min-h-screen bg-[#0f0f0f] px-4 pt-4 pb-0 max-w-[480px] mx-auto font-[Manrope,sans-serif]">

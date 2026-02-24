@@ -1,8 +1,9 @@
 import {BarChart2, type LucideIcon, Receipt, Users} from "lucide-react";
-import type {CategoryId, TabId} from "@/types/types.ts";
+import type {CategoryId, SplitType, TabId} from "@/types/types.ts";
 import {
     Utensils, Car, ShoppingCart, Home, Music, Plane, MoreHorizontal,
 } from "lucide-react";
+import type {FC} from "react";
 
 export const AVATAR_COLORS = [
     "bg-indigo-500", "bg-violet-500", "bg-pink-500", "bg-amber-500",
@@ -33,4 +34,25 @@ export const TABS: TabConfig[] = [
     { id: "expenses", label: "Траты",     icon: Receipt  },
     { id: "members",  label: "Участники", icon: Users    },
     { id: "balances", label: "Долги",     icon: BarChart2 },
+];
+
+interface QuickGroup { emoji: string; name: string }
+
+export const QUICK_GROUPS: QuickGroup[] = [
+    { emoji: "✈️", name: "Поездка в Питер" },
+    { emoji: "🏠", name: "Квартира" },
+    { emoji: "🎉", name: "Корпоратив" },
+    { emoji: "🍕", name: "Ужин с друзьями" },
+];
+
+export const EMOJIS: string[] = [
+    "✈️","🏖️","🏙️","⛷️","🎉","🏠","🍕","🎸",
+    "🏕️","🚗","🎂","🍻","🛳️","🎭","🏋️","🌍",
+];
+
+export interface SplitTypeOption { id: SplitType; label: string; icon: string; desc: string }
+
+export const SPLIT_TYPES: SplitTypeOption[] = [
+    { id: "EQUAL",  label: "Поровну",      icon: "⚖️", desc: "Все платят одинаково" },
+    { id: "CUSTOM", label: "По-разному",   icon: "✏️", desc: "Можно задать доли" },
 ];

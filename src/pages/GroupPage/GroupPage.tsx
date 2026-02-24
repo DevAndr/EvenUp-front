@@ -6,43 +6,68 @@ import {
     ChevronLeft, Plus
 } from "lucide-react";
 import type {
-    Group, Expense, TabId,
+    ApiExpense, ApiGroupMember,
+    CategoryId,
+    Expense, MemberMember, TabId,
 } from "@/types/types.ts";
 import {ExpenseDialog} from "@/components/Dialogs/ExpenseDialog.tsx";
 import {ExpenseCard} from "@/components/ExpenseCard/ExpenseCard.tsx";
 import {AddExpenseSheet} from "@/components/Sheet/AddExpenseSheet.tsx";
 import {calcDebts, formatAmount} from "@/utils";
-import {mockGroup} from "@/mock";
-import {MemberRow} from "@/components/MemberRow/MemberRow.tsx";
+import {MemberRow} from "@/components/Rows/MemberRow.tsx";
 import {DebtRow} from "@/components/DebtRow/DebtRow.tsx";
 import {TABS} from "@/const";
+import {useGetGroup} from "@/api/groups/useGetGroup.ts";
+import {SkeletonCard} from "@/components/Skeleton/SkeletonCard.tsx";
+
+function toMembers(apiMembers: ApiGroupMember[]): MemberMember[] {
+    return apiMembers.map(m => ({
+        id: m.userId,
+        name: m.user.name,
+        isYou: m.userId === CURRENT_USER_ID,
+    }));
+}
+
+function toExpenses(apiExpenses: ApiExpense[]): Expense[] {
+    return apiExpenses.map(e => ({
+        id: e.id,
+        description: e.description,
+        amount: parseFloat(e.amount),
+        category: e.category.toLowerCase() as CategoryId,
+        date: e.date,
+        paidBy: e.paidById,
+        splitWith: e.splits.map(s => s.userId),
+    }));
+}
+
+const CURRENT_USER_ID = "cmm0blr8v0000qt39oiujeac4";
 
 export default function GroupPage() {
     const {id} = useParams<{ id: string }>();
     const navigate = useNavigate();
-
-    console.log(id)
-
-    // const { data: group, isLoading } = useQuery<Group>({
-    //   queryKey: ["group", id],
-    //   queryFn: () => fetchGroup(id!),
-    // });
-
-    const [group, setGroup] = useState<Group>(mockGroup);
+    const {data: group, isLoading} = useGetGroup({id})
     const [activeTab, setActiveTab] = useState<TabId>("expenses");
     const [sheetOpen, setSheetOpen] = useState<boolean>(false);
     const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-    const totalSpent = group.expenses.reduce((s, e) => s + e.amount, 0);
-    const myTotal = group.expenses
-        .filter(e => e.splitWith.includes("1"))
+    const members  = useMemo(() => toMembers(group?.members ?? []), [group]);
+    const expenses = useMemo(() => toExpenses(group?.expenses ?? []), [group]);
+
+    const [localExpenses, setLocalExpenses] = useState<Expense[]>([]);
+    const allExpenses = [...localExpenses, ...expenses];
+
+    if (isLoading || !group) return <SkeletonCard/>
+
+    const totalSpent = allExpenses.reduce((s, e) => s + e.amount, 0);
+    const myTotal = allExpenses
+        .filter(e => e.splitWith.includes(CURRENT_USER_ID))
         .reduce((s, e) => s + e.amount / e.splitWith.length, 0);
 
-    const {transactions, balances} = useMemo(() => calcDebts(group.members, group.expenses), [group]);
-    const myBalance = balances["1"] ?? 0;
+    const {transactions, balances} =  calcDebts(members, allExpenses);
+    const myBalance = balances[CURRENT_USER_ID] ?? 0;
 
     const handleAddExpense = (expense: Expense): void =>
-        setGroup(prev => ({...prev, expenses: [expense, ...prev.expenses]}));
+        setLocalExpenses(prev => [expense, ...prev]);
 
     return (
         <div className="min-h-screen bg-[#0f0f0f] max-w-[480px] mx-auto font-[Manrope,sans-serif]">
@@ -114,8 +139,8 @@ export default function GroupPage() {
                                 <div className="font-bold text-zinc-300">Трат пока нет</div>
                                 <div className="text-sm text-zinc-600">Добавь первую трату</div>
                             </div>
-                        ) : group.expenses.map(exp => (
-                            <ExpenseCard key={exp.id} expense={exp} members={group.members}
+                        ) : expenses.map(exp => (
+                            <ExpenseCard key={exp.id} expense={exp} members={members}
                                          onPress={setSelectedExpense}/>
                         ))}
                     </div>
@@ -123,7 +148,7 @@ export default function GroupPage() {
 
                 {activeTab === "members" && (
                     <div className="flex flex-col gap-2.5 fade-up">
-                        {group.members.map(m => (
+                        {members.map(m => (
                             <MemberRow key={m.id} member={m} balance={balances[m.id] ?? 0}/>
                         ))}
                     </div>
@@ -160,9 +185,9 @@ export default function GroupPage() {
                 </Button>
             </div>
 
-            <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} members={group.members}
+            <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} members={members}
                              onAdd={handleAddExpense}/>
-            <ExpenseDialog open={!!selectedExpense} expense={selectedExpense} members={group.members}
+            <ExpenseDialog open={!!selectedExpense} expense={selectedExpense} members={members}
                            onClose={() => setSelectedExpense(null)}/>
         </div>
     );

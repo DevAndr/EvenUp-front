@@ -20,7 +20,7 @@ export const ExpenseDialog: FC<ExpenseDialogProps> = ({ expense, members, open, 
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="bg-[#161616] border border-[#2a2a2a] rounded-3xl max-w-sm mx-4 p-6">
+            <DialogContent className="bg-[#161616] border border-[#2a2a2a] rounded-3xl max-w-sm mx-4 p-6 w-[320px] m-0">
                 <DialogHeader>
                     <div className={`w-12 h-12 rounded-2xl ${cat.bg} flex items-center justify-center mb-3`}>
                         <Icon size={22} className={cat.color} />
