@@ -40,7 +40,7 @@ function toExpenses(apiExpenses: ApiExpense[]): Expense[] {
     }));
 }
 
-const CURRENT_USER_ID = "cmm0blr8v0000qt39oiujeac4";
+export const CURRENT_USER_ID = "cmm0blr8v0000qt39oiujeac4";
 
 export default function GroupPage() {
     const {id} = useParams<{ id: string }>();
@@ -52,9 +52,7 @@ export default function GroupPage() {
 
     const members  = useMemo(() => toMembers(group?.members ?? []), [group]);
     const expenses = useMemo(() => toExpenses(group?.expenses ?? []), [group]);
-
-    const [localExpenses, setLocalExpenses] = useState<Expense[]>([]);
-    const allExpenses = [...localExpenses, ...expenses];
+    const allExpenses = [ ...expenses];
 
     if (isLoading || !group) return <SkeletonCard/>
 
@@ -65,9 +63,6 @@ export default function GroupPage() {
 
     const {transactions, balances} =  calcDebts(members, allExpenses);
     const myBalance = balances[CURRENT_USER_ID] ?? 0;
-
-    const handleAddExpense = (expense: Expense): void =>
-        setLocalExpenses(prev => [expense, ...prev]);
 
     return (
         <div className="min-h-screen bg-[#0f0f0f] max-w-[480px] mx-auto font-[Manrope,sans-serif]">
@@ -185,8 +180,7 @@ export default function GroupPage() {
                 </Button>
             </div>
 
-            <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} members={members}
-                             onAdd={handleAddExpense}/>
+            <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} idGroup={id} members={members} />
             <ExpenseDialog open={!!selectedExpense} expense={selectedExpense} members={members}
                            onClose={() => setSelectedExpense(null)}/>
         </div>

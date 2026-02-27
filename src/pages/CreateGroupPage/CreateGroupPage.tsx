@@ -1,15 +1,16 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ChevronLeft, Check } from "lucide-react";
-import type { CreateGroupPayload, SplitType } from "@/types/types.ts";
+import {useState} from "react";
+import {useNavigate} from "react-router";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {ChevronLeft, Check} from "lucide-react";
+import type {CreateGroupPayload, SplitType} from "@/types/types.ts";
 import {AddMemberRow} from "@/components/Rows/AddMemberRow.tsx";
 import {QUICK_GROUPS, SPLIT_TYPES} from "@/const";
 import {SplitTypeCard} from "@/components/Cards/SplitTypeCard.tsx";
 import {StepIndicator} from "@/components/Step/StepIndicator.tsx";
 import {EmojiPickerSheet} from "@/components/Emoji/EmojiPickerSheet.tsx";
 import {MemberChip} from "@/components/Chips/MemberChip.tsx";
+import {useCreateGroup} from "@/api/groups/useCreateGroup.ts";
 
 // const createGroup = (data: CreateGroupPayload): Promise<{ id: string }> =>
 //   axios.post("/api/groups", data).then(r => r.data);
@@ -17,18 +18,14 @@ import {MemberChip} from "@/components/Chips/MemberChip.tsx";
 export default function CreateGroupPage() {
     const navigate = useNavigate();
 
-    const [step, setStep]               = useState<number>(0);
-    const [emoji, setEmoji]             = useState<string>("✈️");
-    const [name, setName]               = useState<string>("");
+    const [step, setStep] = useState<number>(0);
+    const [emoji, setEmoji] = useState<string>("✈️");
+    const [name, setName] = useState<string>("");
     const [description, setDescription] = useState<string>("");
-    const [members, setMembers]         = useState<string[]>([]);
-    const [splitType, setSplitType]     = useState<SplitType>("EQUAL");
-    const [nameError, setNameError]     = useState<string>("");
-
-    // const mutation = useMutation<{ id: string }, Error, CreateGroupPayload>({
-    //   mutationFn: createGroup,
-    //   onSuccess: (data) => navigate(`/group/${data.id}`),
-    // });
+    const [members, setMembers] = useState<string[]>([]);
+    const [splitType, setSplitType] = useState<SplitType>("EQUAL");
+    const [nameError, setNameError] = useState<string>("");
+    const {mutate: createGroup} = useCreateGroup()
 
     const addMember = (memberName: string): void => {
         if (members.find(m => m.toLowerCase() === memberName.toLowerCase())) return;
@@ -50,10 +47,11 @@ export default function CreateGroupPage() {
     const handleBack = () => (step === 0 ? navigate(-1) : setStep(s => s - 1));
 
     const handleCreate = (): void => {
-        const payload: CreateGroupPayload = { emoji, name, description, members, splitType };
+        const payload: CreateGroupPayload = {emoji, name, description, members, splitType};
         console.log("Create:", payload);
-        // mutation.mutate(payload);
-        navigate("/group/new-id");
+        createGroup({data: payload}, {
+            onSuccess: (response) => navigate(`/app/group/${response.id}`)
+        })
     };
 
     const canProceed: boolean = step === 0 ? name.trim().length >= 2 : true;
@@ -75,10 +73,10 @@ export default function CreateGroupPage() {
                     variant="ghost" size="icon" onClick={handleBack}
                     className="w-9 h-9 rounded-[12px] bg-[#1a1a1a] border border-[#2a2a2a] text-zinc-400 hover:text-zinc-100 hover:bg-[#242424]"
                 >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={20}/>
                 </Button>
-                <StepIndicator current={step} total={3} />
-                <div className="w-9" />
+                <StepIndicator current={step} total={3}/>
+                <div className="w-9"/>
             </div>
 
             {/* ── Step 0: Название ── */}
@@ -88,11 +86,14 @@ export default function CreateGroupPage() {
                     <p className="text-sm text-zinc-600 mb-6">Дай название и выбери иконку</p>
 
                     <div className="flex items-center gap-3 mb-5">
-                        <EmojiPickerSheet value={emoji} onChange={setEmoji} />
+                        <EmojiPickerSheet value={emoji} onChange={setEmoji}/>
                         <div className="flex-1">
                             <Input
                                 value={name}
-                                onChange={e => { setName(e.target.value); setNameError(""); }}
+                                onChange={e => {
+                                    setName(e.target.value);
+                                    setNameError("");
+                                }}
                                 placeholder="Название группы"
                                 maxLength={40}
                                 autoFocus
@@ -118,12 +119,17 @@ export default function CreateGroupPage() {
                     </div>
 
                     <div>
-                        <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">Быстрый старт</p>
+                        <p className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider mb-3">Быстрый
+                            старт</p>
                         <div className="flex flex-wrap gap-2">
                             {QUICK_GROUPS.map(ex => (
                                 <button
                                     key={ex.name}
-                                    onClick={() => { setName(ex.name); setEmoji(ex.emoji); setNameError(""); }}
+                                    onClick={() => {
+                                        setName(ex.name);
+                                        setEmoji(ex.emoji);
+                                        setNameError("");
+                                    }}
                                     className="bg-[#161616] border border-[#242424] rounded-full px-4 py-2 text-[13px] text-zinc-500 hover:text-zinc-300 hover:border-zinc-600 transition-all"
                                 >
                                     {ex.emoji} {ex.name}
@@ -140,17 +146,19 @@ export default function CreateGroupPage() {
                     <h2 className="text-[26px] font-extrabold text-zinc-100 tracking-tight mb-1">Участники</h2>
                     <p className="text-sm text-zinc-600 mb-6">Добавь имена — они присоединятся по ссылке</p>
 
-                    <AddMemberRow onAdd={addMember} />
+                    <AddMemberRow onAdd={addMember}/>
 
                     <div className="flex flex-wrap gap-2 mt-4">
-                        <MemberChip name="Вы" isYou onRemove={() => {}} />
+                        <MemberChip name="Вы" isYou onRemove={() => {
+                        }}/>
                         {members.map(m => (
-                            <MemberChip key={m} name={m} onRemove={removeMember} />
+                            <MemberChip key={m} name={m} onRemove={removeMember}/>
                         ))}
                     </div>
 
                     {members.length === 0 ? (
-                        <div className="mt-6 bg-indigo-500/[0.07] border border-indigo-500/15 rounded-2xl p-4 text-[13px] text-zinc-500 leading-relaxed">
+                        <div
+                            className="mt-6 bg-indigo-500/[0.07] border border-indigo-500/15 rounded-2xl p-4 text-[13px] text-zinc-500 leading-relaxed">
                             💡 Можно добавить участников потом — просто отправь им ссылку на группу
                         </div>
                     ) : (
@@ -172,7 +180,7 @@ export default function CreateGroupPage() {
                     </label>
                     <div className="flex gap-2.5 mb-7">
                         {SPLIT_TYPES.map(t => (
-                            <SplitTypeCard key={t.id} type={t} selected={splitType === t.id} onClick={setSplitType} />
+                            <SplitTypeCard key={t.id} type={t} selected={splitType === t.id} onClick={setSplitType}/>
                         ))}
                     </div>
 
@@ -191,15 +199,16 @@ export default function CreateGroupPage() {
             )}
 
             {/* Bottom bar */}
-            <div className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-7 pt-8 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/90 to-transparent">
+            <div
+                className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto px-4 pb-7 pt-8 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/90 to-transparent">
                 <Button
                     onClick={step < 2 ? handleNext : handleCreate}
                     disabled={!canProceed}
                     className="w-full bg-indigo-500 hover:bg-indigo-600 disabled:opacity-30 rounded-2xl h-14 text-[16px] font-bold shadow-[0_4px_24px_rgba(99,102,241,0.35)] tracking-tight"
                 >
                     {step < 2
-                        ? <><span>Далее</span><ChevronLeft size={18} className="rotate-180 ml-1" /></>
-                        : <><Check size={18} className="mr-1.5" />Создать группу</>
+                        ? <><span>Далее</span><ChevronLeft size={18} className="rotate-180 ml-1"/></>
+                        : <><Check size={18} className="mr-1.5"/>Создать группу</>
                     }
                 </Button>
             </div>

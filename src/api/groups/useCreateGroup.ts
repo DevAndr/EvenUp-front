@@ -1,18 +1,19 @@
-import type {Group} from "@/types/types.ts";
+import type {ApiGroup, CreateGroupPayload} from "@/types/types.ts";
 import axiosInstance from "@/api/axios/axiosInstance.ts";
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import type {AxiosError} from "axios";
 
-
 type Request = {
-    id?: string
+    data: CreateGroupPayload
 }
 
-const fetchGroups = ({id}: Request): Promise<Group> =>
-    axiosInstance.get(`/groups/${id}`).then(r => r.data);
+const createGroup = async ({data}: Request) => {
+    const resp = await axiosInstance.post<ApiGroup>('/groups', data);
+    return resp.data;
+}
 
-export const useGetGroup = (req: Request) => {
-    return useMutation<JumpResponseData, AxiosError, Request>({
-        mutationFn: jumpToPlanet,
+export const useCreateGroup = () => {
+    return useMutation<ApiGroup, AxiosError, Request>({
+        mutationFn: createGroup,
     });
 }

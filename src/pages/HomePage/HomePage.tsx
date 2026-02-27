@@ -7,10 +7,8 @@ import {TotalSummary} from "@/components/TotalSummary/TotalSummary.tsx";
 import {SkeletonCard} from "@/components/Skeleton/SkeletonCard.tsx";
 import {useGetGroups} from "@/api/groups/useGetGroups.ts";
 
-
 export default function HomePage() {
     const navigate = useNavigate();
-
     const { data: groups = [], isLoading } = useGetGroups();
 
     const handleGroupClick = (id: string) => navigate(`/app/group/${id}`);
