@@ -1,5 +1,5 @@
 import {type FC, useState} from "react";
-import type {CategoryId, MemberMember} from "@/types/types.ts";
+import type {CategoryId, CreateExpensePayload, MemberMember} from "@/types/types.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Sheet, SheetContent, SheetHeader, SheetTitle} from "@/components/ui/sheet";
 import {Input} from "@/components/ui/input";
@@ -43,14 +43,26 @@ export const AddExpenseSheet: FC<AddExpenseSheetProps> = ({
     const handleAdd = (): void => {
         if (!valid || !isDefined(idGroup)) return;
 
+        let amountsSplit = null
+
+        if (splits && splits.size > 0) {
+            amountsSplit = Array.from(splits, ([id, amount]) => ({ userId: id, amount }));
+        }
+
+        const data: CreateExpensePayload = {
+            description,
+            amount: Number(amount),
+            category,
+            paidById: CURRENT_USER_ID,
+            date: new Date().toISOString(),
+        }
+
+        if (isDefined(amountsSplit)) {
+            data['splits'] = amountsSplit;
+        }
+
         createExpenses({
-            idGroup, data: {
-                description,
-                amount: Number(amount),
-                category,
-                paidById: CURRENT_USER_ID,
-                date: new Date().toISOString(),
-            }
+            idGroup, data
         }, {
             onSuccess: () => {
                 setDescription("");
@@ -58,10 +70,10 @@ export const AddExpenseSheet: FC<AddExpenseSheetProps> = ({
                 setCategory("FOOD");
                 setPaidBy(CURRENT_USER_ID);
                 setSplitWith(members.map(m => m.id));
+                setSplits(new Map())
                 onClose();
             }
         })
-
     };
 
     const peerAmountHandler = (e: React.ChangeEvent<HTMLInputElement>) => {

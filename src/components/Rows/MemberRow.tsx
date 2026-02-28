@@ -1,9 +1,9 @@
-import type {Member} from "@/types/types.ts";
+import type {MemberMember} from "@/types/types.ts";
 import type {FC} from "react";
 import {AvatarGroup} from "@/components/Avatar/AvatarGroup.tsx";
 import {formatAmount} from "@/utils";
 
-interface MemberRowProps { member: Member; balance: number }
+interface MemberRowProps { member: MemberMember; balance: number }
 export const MemberRow: FC<MemberRowProps> = ({ member, balance }: MemberRowProps) =>  {
     const positive = balance > 0.01;
     const negative = balance < -0.01;

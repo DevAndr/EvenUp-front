@@ -4,6 +4,7 @@ import CreateGroupPage from "./pages/CreateGroupPage/CreateGroupPage"
 import GroupPage from "@/pages/GroupPage/GroupPage.tsx";
 import SettlePage from "@/pages/SettlePage/SettlePage.tsx";
 import {SplashScreen} from "@/pages/SplashScreen/SplashScreen.tsx";
+import JoinGroupPage from "@/pages/JoinGroupPage/JoinGroupPage.tsx";
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
                 <Route path="group/new" element={<CreateGroupPage/>}/>
                 <Route path="group/:id"  element={<GroupPage />} />
                 <Route path="group/:id/settle" element={<SettlePage />} />
+                <Route path="group/:id/join" element={<JoinGroupPage />} />
             </Route>
         </Routes>
     )

@@ -19,6 +19,7 @@ import {DebtRow} from "@/components/DebtRow/DebtRow.tsx";
 import {TABS} from "@/const";
 import {useGetGroup} from "@/api/groups/useGetGroup.ts";
 import {SkeletonCard} from "@/components/Skeleton/SkeletonCard.tsx";
+import {GroupMenu} from "@/components/Menu/GroupMenu/GroupMenu.tsx";
 
 function toMembers(apiMembers: ApiGroupMember[]): MemberMember[] {
     return apiMembers.map(m => ({
@@ -85,6 +86,7 @@ export default function GroupPage() {
                         <span className="text-2xl">{group.emoji}</span>
                         <h1 className="text-[18px] font-extrabold text-zinc-100 tracking-tight truncate">{group.name}</h1>
                     </div>
+                    <GroupMenu idGroup={id} />
                 </div>
 
                 {/* Stats */}

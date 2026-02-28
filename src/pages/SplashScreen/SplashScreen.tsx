@@ -4,6 +4,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Spinner} from "@/components/ui/spinner.tsx";
 import axios from "axios";
 import {saveToken} from "@/utils";
+import {useCurrentUser} from "@/api/user/getCurrentUser.ts";
 
 type AuthStatus = "loading" | "authenticating" | "success" | "error";
 
@@ -16,6 +17,7 @@ interface TelegramWebApp {
             last_name?: string;
             username?: string;
         };
+        start_param?: string;
     };
     ready: () => void;
     expand: () => void;
@@ -43,6 +45,7 @@ export const SplashScreen = () => {
     const navigate = useNavigate();
     const [status, setStatus] = useState<AuthStatus>("loading");
     const [errorMsg, setErrorMsg] = useState<string>("");
+    const {data: currentUser} = useCurrentUser();
 
     useEffect(() => {
         const tg = window.Telegram?.WebApp;
@@ -78,7 +81,15 @@ export const SplashScreen = () => {
             .then((token) => {
                 saveToken(token);
                 setStatus("success");
-                setTimeout(() => navigate("/app/home"), 300);
+                setTimeout(() => {
+                    const startParam = tg.initDataUnsafe?.start_param;
+
+                    if (startParam) {
+                        navigate(`/app/group/${startParam}/join`);
+                    } else {
+                        navigate("/app/home");
+                    }
+                }, 300);
             })
             .catch((err) => {
                 setStatus("error");
@@ -88,6 +99,8 @@ export const SplashScreen = () => {
                 setErrorMsg(msg);
             });
     }, [navigate]);
+
+    console.log({currentUser})
 
     if (status !== "error") {
         return (
