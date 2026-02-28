@@ -34,7 +34,7 @@ function toExpenses(apiExpenses: ApiExpense[]): Expense[] {
         id: e.id,
         description: e.description,
         amount: parseFloat(e.amount),
-        category: e.category.toLowerCase() as CategoryId,
+        category: e.category as CategoryId,
         date: e.date,
         paidBy: e.paidById,
         splitWith: e.splits.map(s => s.userId),
