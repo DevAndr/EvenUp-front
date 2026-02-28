@@ -11,15 +11,13 @@ import type {
     Expense, MemberMember, TabId,
 } from "@/types/types.ts";
 import {ExpenseDialog} from "@/components/Dialogs/ExpenseDialog.tsx";
-import {ExpenseCard} from "@/components/ExpenseCard/ExpenseCard.tsx";
 import {AddExpenseSheet} from "@/components/Sheet/AddExpenseSheet.tsx";
 import {calcDebts, formatAmount} from "@/utils";
-import {MemberRow} from "@/components/Rows/MemberRow.tsx";
-import {DebtRow} from "@/components/DebtRow/DebtRow.tsx";
-import {TABS} from "@/const";
 import {useGetGroup} from "@/api/groups/useGetGroup.ts";
 import {SkeletonCard} from "@/components/Skeleton/SkeletonCard.tsx";
 import {GroupMenu} from "@/components/Menu/GroupMenu/GroupMenu.tsx";
+import {GroupTabs} from "@/components/Tabs/GroupTabs/GroupTabs.tsx";
+import {GroupTabContent} from "@/components/Tabs/GroupTabs/GroupTabContent.tsx";
 
 function toMembers(apiMembers: ApiGroupMember[]): MemberMember[] {
     return apiMembers.map(m => ({
@@ -51,9 +49,9 @@ export default function GroupPage() {
     const [sheetOpen, setSheetOpen] = useState<boolean>(false);
     const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-    const members  = useMemo(() => toMembers(group?.members ?? []), [group]);
+    const members = useMemo(() => toMembers(group?.members ?? []), [group]);
     const expenses = useMemo(() => toExpenses(group?.expenses ?? []), [group]);
-    const allExpenses = [ ...expenses];
+    const allExpenses = [...expenses];
 
     if (isLoading || !group) return <SkeletonCard/>
 
@@ -62,7 +60,7 @@ export default function GroupPage() {
         .filter(e => e.splitWith.includes(CURRENT_USER_ID))
         .reduce((s, e) => s + e.amount / e.splitWith.length, 0);
 
-    const {transactions, balances} =  calcDebts(members, allExpenses);
+    const {transactions, balances} = calcDebts(members, allExpenses);
     const myBalance = balances[CURRENT_USER_ID] ?? 0;
 
     return (
@@ -86,7 +84,7 @@ export default function GroupPage() {
                         <span className="text-2xl">{group.emoji}</span>
                         <h1 className="text-[18px] font-extrabold text-zinc-100 tracking-tight truncate">{group.name}</h1>
                     </div>
-                    <GroupMenu idGroup={id} />
+                    <GroupMenu idGroup={id}/>
                 </div>
 
                 {/* Stats */}
@@ -109,68 +107,18 @@ export default function GroupPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Tabs */}
-                <div className="flex gap-1 bg-[#161616] border border-[#242424] rounded-2xl p-1 mb-4">
-                    {TABS.map(tab => {
-                        const Icon = tab.icon;
-                        const active = activeTab === tab.id;
-                        return (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition-all ${active ? "bg-[#242424] text-zinc-100" : "text-zinc-600 hover:text-zinc-400"}`}
-                            >
-                                <Icon size={14}/>{tab.label}
-                            </button>
-                        );
-                    })}
-                </div>
+                <GroupTabs activeTab={activeTab} setActiveTab={(tab) => setActiveTab(tab)}/>
             </div>
 
-            {/* Tab content */}
-            <div className="px-4 pb-28">
-                {activeTab === "expenses" && (
-                    <div className="flex flex-col gap-2.5 fade-up">
-                        {group.expenses.length === 0 ? (
-                            <div className="flex flex-col items-center py-16 gap-3 text-center">
-                                <div className="text-4xl">🧾</div>
-                                <div className="font-bold text-zinc-300">Трат пока нет</div>
-                                <div className="text-sm text-zinc-600">Добавь первую трату</div>
-                            </div>
-                        ) : expenses.map(exp => (
-                            <ExpenseCard key={exp.id} expense={exp} members={members}
-                                         onPress={setSelectedExpense}/>
-                        ))}
-                    </div>
-                )}
-
-                {activeTab === "members" && (
-                    <div className="flex flex-col gap-2.5 fade-up">
-                        {members.map(m => (
-                            <MemberRow key={m.id} member={m} balance={balances[m.id] ?? 0}/>
-                        ))}
-                    </div>
-                )}
-
-                {activeTab === "balances" && (
-                    <div className="flex flex-col gap-2.5 fade-up">
-                        {transactions.length === 0 ? (
-                            <div className="flex flex-col items-center py-16 gap-3 text-center">
-                                <div className="text-4xl">✅</div>
-                                <div className="font-bold text-zinc-300">Все квиты!</div>
-                                <div className="text-sm text-zinc-600">Никто никому не должен</div>
-                            </div>
-                        ) : (
-                            <>
-                                <p className="text-xs text-zinc-600 mb-1">
-                                    {transactions.length} {transactions.length < 5 ? "перевода" : "переводов"} чтобы
-                                    закрыть все долги
-                                </p>
-                                {transactions.map((t, i) => <DebtRow key={i} transaction={t}/>)}
-                            </>
-                        )}
-                    </div>
-                )}
-            </div>
+            <GroupTabContent
+                activeTab={activeTab}
+                group={group}
+                expenses={expenses}
+                members={members}
+                balances={balances}
+                transactions={transactions}
+                setSelectedExpense={setSelectedExpense}
+            />
 
             {/* FAB */}
             <div
@@ -182,7 +130,7 @@ export default function GroupPage() {
                 </Button>
             </div>
 
-            <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} idGroup={id} members={members} />
+            <AddExpenseSheet open={sheetOpen} onClose={() => setSheetOpen(false)} idGroup={id} members={members}/>
             <ExpenseDialog open={!!selectedExpense} expense={selectedExpense} members={members}
                            onClose={() => setSelectedExpense(null)}/>
         </div>
